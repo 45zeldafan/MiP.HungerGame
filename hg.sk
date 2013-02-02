@@ -3,24 +3,28 @@
 # -  HungerGame  -
 # ----------------
 
-# Seconds doesn't work with integer! 
 
 #==========================================================#
 # +------------------------------------------------------+ #
-# |                     Variabili 	                     | #
-# |                     Variables 	                     | #
+# |                 Variabili e Opzioni	                 | #
+# |                Variables and Options	             | #
 # +------------------------------------------------------+ #
 #==========================================================#
-variables:
-	{mip.hg.map} = "w_hg" 				# the world name to be restored/regenerated
-	{mip.hg.custommap} = "w_hg_backup"	# Need to have the backup map into the folder "w_hg_backup" for default
-	{mip.hg.usecustom} = 0				# 0 to not use custom map, 1 yes. You can change it via command in-game without restart!! /hgcustom 0-1
+options:
+	tag: &2[MiP.HG] &e				# well.. the chat tag! Thanks if you leave it like this MiP.HG :)
+	mingrace: 5 minutes   			# Minutes of grace NO-PVP on start
+	waitsec: 30 seconds				# Waiting seconds before the game really starts (players teleport into arena)
+	minplayer: 5					# autostart at minplayer
+	slot: 32						# max slots allowed for the hg
+	map: w_hg						# hg map name
+	custommap: w_hg_backup			# hg custom map name
+	maxtime: 60 minutes				# max time per match
 	
+variables:
+	{mip.hg.usecustom} = 0				# 0 to not use custom map, 1 yes. You can change it via command /hgcustom 0-1
 	{mip.hg.stato} = 0				# Status of the hg: 0 is free, 1 is occupied
-	{mip.hg.tag} = "&2[MiP.HG] &e"	# well.. the chat tag! Thanks if you leave it like this MiP.HG :)
-	{mip.hg.slot} = 32 				# max slots allowed for the hg
 	{mip.hg.slots} = 0				# slots of in-game actual players
-	{mip.hg.minplayer} = 15 		# autostart at minplayer
+
 
 #==========================================================#
 # +------------------------------------------------------+ #
@@ -46,58 +50,74 @@ command /hgtest:
 	trigger:
 		message "Lista: %{mip.hg.player::*}%"
 		message "Slot: %{mip.hg.slots}%"
-		message "Minimo: %{mip.hg.minplayer}%"
+		message "Minimo: %{@minplayer}%"
 		message "Inizio: %{mip.hg.inizio}%"
 
 command /hg [<text>] [<player>]:
 	description: Comandi Hunger Games
 	permission: mip.attivo
+	aliases: hungergame,hgame,hungerg
 	usage: /hg <parametro>
 	trigger:
 		if arg 1 is not set:
-			message "%{mip.hg.tag}%HG Made in Pipe! - In Costruzione! :P"
+			message "{@tag}HG Made in Pipe! - In Fase di Test!"
+			if {mip.hg.stato} is 1:
+				message "{@tag}Partita in corso. Durata massima: {@maxtime}."
+				message "{@tag}Tempo trascorso: %difference between {mip.hg.inizio} and now%"
+				message "{@tag}%{mip.hg.slots}% giocatori su {@slot}"
+			else:
+				message "{@tag}&2Partecipa anche tu digitando /hg gioca"
+				message "{@tag}&2e leggi le regole nella Lobby!"
+				message "{@tag}&cPERDERAI TUTTO L'INVENTARIO!"
+			message "{@tag}&aSe muori perdi livelli, se partecipi perdi inventario: vinci o verrai sconfitto."
+
+				
 		
 		argument 1 is "setspawn":
 			player has permissions "mip.hg.admin"
 			set {mip.hg.spawn} to player's location
-			message "%{mip.hg.tag}%Spawn settato correttamente"
+			message "{@tag}Spawn settato correttamente"
 			stop
 			
 		argument 1 is "setlobby":
 			player has permissions "mip.hg.admin"
 			set {mip.hg.lobby} to player's location
-			message "%{mip.hg.tag}%Lobby settata correttamente"
+			message "{@tag}Lobby settata correttamente"
 			stop
 		
 		argument 1 is "setexit":
 			player has permissions "mip.hg.admin"
 			set {mip.hg.exit} to player's location
-			message "%{mip.hg.tag}%Uscita settata correttamente"
+			message "{@tag}Uscita settata correttamente"
 			stop
 					
 		# Check if spawn point is set. If not it's stop everything
 		if {mip.hg.spawn} is not set:
-			message "%{mip.hg.tag}%Plugin non settato correttamente. Avvisa l'admin! (spawn)"
+			message "{@tag}Plugin non settato correttamente. Avvisa l'admin! (spawn)"
 			stop
 
 		# Check if lobby point is set. If not it's stop everything
 		if {mip.hg.lobby} is not set:
-			message "%{mip.hg.tag}%Plugin non settato correttamente. Avvisa l'admin! (lobby)"
+			message "{@tag}Plugin non settato correttamente. Avvisa l'admin! (lobby)"
 			stop
 		
 		# Check if lobby point is set. If not it's stop everything
 		if {mip.hg.exit} is not set:
-			message "%{mip.hg.tag}%Plugin non settato correttamente. Avvisa l'admin! (exit)"
+			message "{@tag}Plugin non settato correttamente. Avvisa l'admin! (exit)"
 			stop
 		
 		# See who is on the HG game
-		argument 1 is "lista":
+		argument 1 is "lista","l" or "list":
 			if {mip.hg.stato} is 1:
-				message "%{mip.hg.tag}%<light green>Giocatori totali: %{mip.hg.slots}% su %{mip.hg.slot}%"
+				message "{@tag}<light green>Giocatori totali: %{mip.hg.slots}% su %{@slot}%"
 				set {_lista} to ""
-				message "%{mip.hg.player::*}%"
+				if {mip.hg.slots} is less than 4:
+					loop {mip.hg.player::*}:
+						message "&e%loop-value's name% si trova: %location of loop-value%"
+				else:
+					message "%{mip.hg.player::*}%"
 			else: #stato è 0
-				message "%{mip.hg.tag}%<red>HG non in corso!"
+				message "{@tag}<red>HG non in corso!"
 
 						
 		argument 1 is "esci":
@@ -105,14 +125,14 @@ command /hg [<text>] [<player>]:
 			stop
 			
 		argument 1 is "join","entra" or "gioca":
-			if {mip.hg.slots} is greater than {mip.hg.slot}:
-				message "%{mip.hg.tag}% <light red>Gioco al completo! Aspetta che finisca e riprova."
+			if {mip.hg.slots} is greater than {@slot}:
+				message "{@tag} <light red>Gioco al completo! Aspetta che finisca e riprova."
 				stop
 			if {mip.hg.stato} is 1:
-				message "%{mip.hg.tag}%<light red>Gioco in corso. Riprova più tardi!"
+				message "{@tag}<light red>Gioco in corso. Riprova più tardi!"
 				stop
 			if {mip.hg.player::%player%} is set:
-				message "%{mip.hg.tag}%<light red>Sei già in attesa di partecipare!"
+				message "{@tag}<light red>Sei già in attesa di partecipare!"
 				stop
 			message "&7Teletrasporto alla lobby in 5"
 			wait 1 second
@@ -124,15 +144,13 @@ command /hg [<text>] [<player>]:
 			wait 1 second
 			message "&7.. 1"
 			wait 1 second
-			message "%{mip.hg.tag}%&7Puoi abbandonare l'HG digitando /hg esci"
-			execute console command "hg_tool + %player%"
+			if {mip.hg.stato} is 0:
+				message "{@tag}&7Puoi abbandonare l'HG digitando /hg esci"
+				execute console command "hg_tool + %player%"
+			else:
+				message "{@tag}&7Troppo tardi, la partita è appena cominciata!"
 			stop
 
-command /hgset <text> [<integer>]:
-	permission: mip.hg.admin
-	trigger:
-		argument 1 is "autostart":
-			set {mip.hg.minplayer} to arg 2
 
 command /hgcustom <text>:
 	description: Abilita/Disabilita la mappa custom
@@ -140,15 +158,16 @@ command /hgcustom <text>:
 	trigger:
 		if arg 1 is "yes","1" or "ok":
 			set {mip.hg.usecustom} to 1
-			message "%{mip.hg.tag}%Selezionata mappa personalizzata" # custom map selected
+			message "{@tag}Selezionata mappa personalizzata" # custom map selected
 		else:
 			set {mip.hg.usecustom} to 0
-			message "%{mip.hg.tag}%Selezionata mappa casuale" 		 # random map selected
+			message "{@tag}Selezionata mappa casuale" 		 # random map selected
 			
 command /hg_win <player>:
 	description: Comando vittoria player
 	executable by: console
 	trigger:
+		clear inventory of arg 1
 		teleport argument 1 to {mip.hg.exit}
 		send "&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-" to arg 1
 		send "<gold>(( )) Hai vinto gli HungerGame di MinatoriUnti! (( ))" to argument 1
@@ -157,7 +176,7 @@ command /hg_win <player>:
 		broadcast "&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-"
 		broadcast "<gold>(( )) %arg 1%<gold> ha vinto gli HungerGame di MinatoriUnti! (( ))"
 		broadcast "&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-"
-		execute console command "hg_tool end"
+#		execute console command "hg_tool end"
 		stop
 	
 	
@@ -168,33 +187,34 @@ command /hg_tool [<text>] [<offline player>]:
 	trigger:
 		
 		argument 1 is "+":
+			arg 2 is online
 			if {mip.hg.slots} is not set:
 				set {mip.hg.slots} to 1
 			else:
 				add 1 to {mip.hg.slots}
 			add {mip.hg.player::%arg 2%} to {mip.hg.player::*}
 			set {mip.hg.player::%arg 2%} to arg 2
-			message "%{mip.hg.tag}% Aggiunto 1 player agli HG"
+			message "{@tag} Aggiunto 1 player agli HG"
 			teleport arg 2 to {mip.hg.lobby}
-			broadcast "%{mip.hg.tag}%&e%arg 2% &eparteciperà al prossimo HungerGame!"
+			broadcast "{@tag}&e%arg 2's name% &eparteciperà al prossimo HungerGame!"
 			set {_num} to 0
 			loop {mip.hg.player::*}:
 				add 1 to {_num}
 			if {_num} is not {mip.hg.slots}:
 				set {mip.hg.slots} to {_num}
 			if {mip.hg.inizio} is not set:
-				if {_num} is more or equal to {mip.hg.minplayer}:
+				if {_num} is more or equal to {@minplayer}:
 					set {mip.hg.inizio} to now
-					broadcast "%{mip.hg.tag}%Inizio HungerGame tra 30 secondi! Partecipate con /hg gioca"
+					broadcast "{@tag}Inizio HungerGame tra {@waitsec}! Partecipate con /hg gioca"
 			stop
 			
 		argument 1 is "-":
 			remove 1 from {mip.hg.slots}
 			delete {mip.hg.player::%arg 2%}
-			message "%{mip.hg.tag}% Rimosso 1 player dagli HG"
-			teleport arg 2 to {mip.hg.exit}
+			message "{@tag} Rimosso 1 player dagli HG"
 			clear inventory of arg 2
-			send "%{mip.hg.tag}%&cSei uscito dalla partita" to arg 2
+			teleport arg 2 to {mip.hg.exit}
+			send "{@tag}&cSei uscito dalla partita" to arg 2
 			if {mip.hg.slots} is 1:
 				{mip.hg.stato} is 1
 				execute console command "hg_tool - %player%"
@@ -208,13 +228,28 @@ command /hg_tool [<text>] [<offline player>]:
 					add 1 to {_num}
 				if {_num} is not {mip.hg.slots}:
 					set {mip.hg.slots} to {_num}
-				if {_num} is less than {mip.hg.minplayer}:
+				if {_num} is less than {@minplayer}:
 					delete {mip.hg.inizio}
-					broadcast "%{mip.hg.tag}%<red>Inizio HungerGame annullato. Siete meno di %{mip.hg.minplayer}% partecipanti!"
+					broadcast "{@tag}<red>Inizio HungerGame annullato. Siete meno di %{@minplayer}% partecipanti!"
+			if {mip.hg.stato} is 1:
+				if {mip.hg.slots} is 2:
+					loop {mip.hg.player::*}:
+						send "{@tag}Tra 5 secondi verrai teletrasportato dall'ultimo giocatore rimasto!!" to loop-value
+						wait 1 second
+						send "{@tag}..4" to loop-value
+						wait 1 second
+						send "{@tag}..3" to loop-value
+						wait 1 second
+						send "{@tag}..2" to loop-value
+						wait 1 second
+						send "{@tag}..1" to loop-value
+						wait 2 second
+						if {mip.hg.stato} is 1:
+							execute console command "mv tp %loop-value% {@map}"
 			stop
 			
-		argument 1 is "end":
-			broadcast "%{mip.hg.tag}%<light green>HG terminato. In avvio reset..."
+		argument 1 is "end" or "fine":
+			broadcast "{@tag}<light green>HG terminato. In avvio reset..."
 			set {mip.hg.stato} to 0
 			set {mip.hg.slots} to 0
 			loop {mip.hg.player::*}:
@@ -224,54 +259,58 @@ command /hg_tool [<text>] [<offline player>]:
 			delete {mip.hg.inizio}
 			execute console command "hg_tool reset"
 			stop
-		argument 1 is "start":
+		argument 1 is "start","parti" or "vai":
 			set {mip.hg.stato} to 1
 			set {mip.hg.inizio} to now
-			broadcast "%{mip.hg.tag}% HungerGame iniziato!"
+			broadcast "{@tag} HungerGame iniziato!"
 			loop {mip.hg.player::*}:
 				set gamemode of loop-value to survival
 #				teleport loop-value to {mip.hg.spawn}
-				execute console command "mv tp %loop-value% %{mip.hg.map}%"
+				execute console command "mv tp %loop-value% {@map}"
 				heal loop-value
 				add 10 to loop-value's hunger bar
 				clear loop-value's inventory
+				add 268 to inventory of loop-value
 			set {mip.hg.grace} to now
 			wait 5 seconds
-			broadcast "%{mip.hg.tag}% HungerGame iniziato!"
+			broadcast "{@tag} HungerGame iniziato!"
 			stop
 			
 		argument 1 is "reset":
 			if {mip.hg.usecustom} is 1:
-				execute console command "mv delete w_hg"
+				execute console command "mv delete {@map}"
 				wait 1 seconds
 				execute console command "mvconfirm"
 				wait 5 seconds
-				execute console command "mv clone w_hg_backup"
+				execute console command "mv load {@custommap}"
+				wait 3 seconds
+				execute console command "mv clone {@custommap} {@map}"
+				wait 1 seconds
+				execute console command "mvconfirm"
 				wait 5 seconds
-				execute console command "mv delete w_hg"
-				wait 5 seconds
+				execute console command "mv load {@map}"
 			else:
-				execute console command "mv regen %{mip.hg.map}% -s"
+				execute console command "mv regen {@map} -s"
 				wait 1 second
 				execute console command "mvconfirm"
 			
 					
 		argument 1 is "loadmap":
 			if {mip.hg.usecustom} is 1:
-				execute console command "mv import %{mip.hg.custommap}% normal"
+				execute console command "mv import {@custommap} normal"
 				wait 5 seconds
-				execute console command "mv unload %{mip.hg.custommap}%"
-				execute console command "mv delete %{mip.hg.map}%"
+				execute console command "mv unload {@custommap}"
+				execute console command "mv delete {@map}"
 				wait 1 second
 				execute console command "mvconfirm"
 				wait 5 seconds
-				execute console command "mv clone %{mip.hg.custommap}% %{mip.hg.map}%"
+				execute console command "mv clone {@custommap} {@map}"
 				wait 1 second
 				execute console command "mvconfirm"
 				wait 3 seconds
-				execute console command "mv load %{mip.hg.map}%"
+				execute console command "mv load {@map}"
 			else:
-				execute console command "mv create %{mip.hg.map}% normal"
+				execute console command "mv create {@map} normal"
 				wait 1 second
 				execute console command "mvconfirm"
 				
@@ -286,7 +325,7 @@ command /hg_tool [<text>] [<offline player>]:
 on death of player:
 	if {mip.hg.stato} is 1:
 		if {mip.hg.player::%player%} is set:
-
+			strike lightning effect at player's location
 			heal player
 
 			if {mip.hg.slots} is 2:
@@ -295,13 +334,18 @@ on death of player:
 					
 			if {mip.hg.slots} is greater than 2:
 				execute console command "hg_tool - %player%"
-				broadcast "%{mip.hg.tag}%%player% è morto. %{mip.hg.slots}% giocatori rimasti!"
+				if attacker is a player:
+					broadcast "{@tag}%player% è stato dilaniato da %attacker's name%. %{mip.hg.slots}% giocatori rimasti!" #remaining player at death of user
+				else:
+					broadcast "{@tag}%player% è morto. %{mip.hg.slots}% giocatori rimasti!" #remaining player at death of user
 				stop
 
 on logout:
 	if {mip.hg.player::%player%} is set:
 		set {mip.hg.offline::%player%} to player
 		execute console command "hg_tool - %player%"
+		wait 1 second
+		broadcast "{@tag} %player% ha sloggato durante l'HG. %{mip.hg.slots}% giocatori rimasti"
 
 on join:
 	if {mip.hg.offline::%player%} is set:
@@ -317,22 +361,24 @@ on chat:
 	if {mip.hg.stato} is 1:
 		if {mip.hg.player::%player%} is set:
 			cancel event
-			broadcast "%{mip.hg.tag}% %player%: %message%"
+			broadcast "{@tag}%player's name%: %message%"
 			
 every 10 seconds:
 	if {mip.hg.stato} is 0:
 		if {mip.hg.inizio} is set:
-			if difference between {mip.hg.inizio} and now is more than 30 seconds:
+			if difference between {mip.hg.inizio} and now is more than {@waitsec}:
 				execute console command "hg_tool start"
 	else:
-		difference between {mip.hg.inizio} and now is more than 60 minutes
-		broadcast "%{mip.hg.tag}%TEMPO TERMINATO! 60 MINUTI PASSATI! PARTITA TERMINATA!"
+		if {mip.hg.slots} is less than 1:
+			execute console command "hg_tool end"
+		difference between {mip.hg.inizio} and now is more than {@maxtime}
+		broadcast "{@tag}TEMPO SCADUTO! PARTITA TERMINATA!"
 		execute console command "hg_tool end"
 
 on damage of player:
 	{mip.hg.stato} is 1
 	{mip.hg.player::%attacker%} is set
 	set {_diff} to difference between {mip.hg.inizio} and now
-	{_diff} is less than 5 minutes
+	{_diff} is less than {@mingrace}
 	cancel event
-	send "%{mip.hg.tag}%PVP negato.Periodo di grazia attivo per altri %difference between 5 minutes and {_diff}% minuti" to attacker
+	send "{@tag}PVP negato.Periodo di grazia attivo per altri %difference between {@mingrace} and {_diff}% minuti" to attacker
