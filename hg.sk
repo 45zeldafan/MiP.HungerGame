@@ -188,6 +188,7 @@ command /hg_tool [<text>] [<offline player>]:
 		
 		argument 1 is "+":
 			arg 2 is online
+			{mip.hg.player::%arg 2%} is not set
 			if {mip.hg.slots} is not set:
 				set {mip.hg.slots} to 1
 			else:
