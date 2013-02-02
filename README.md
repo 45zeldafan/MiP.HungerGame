@@ -10,3 +10,7 @@ Welcome to the MiP.HungerGame!
 * [Commands](https://github.com/portapipe/MiP.HungerGame/wiki/Commands)
 
 * [Permissions](https://github.com/portapipe/MiP.HungerGame/wiki/Permissions)
+
+Required:
+
+* MultiVerse
