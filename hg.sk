@@ -21,8 +21,6 @@ variables:
 	{mip.hg.slot} = 32 				# max slots allowed for the hg
 	{mip.hg.slots} = 0				# slots of in-game actual players
 	{mip.hg.minplayer} = 15 		# autostart at minplayer
-	{mip.hg.mingrace} = 5   		# Minutes of grace NO-PVP on start
-	{mip.hg.waitsec} = 30   		# Waiting seconds before the game really starts (players teleport into arena)
 
 #==========================================================#
 # +------------------------------------------------------+ #
@@ -187,7 +185,7 @@ command /hg_tool [<text>] [<offline player>]:
 			if {mip.hg.inizio} is not set:
 				if {_num} is more or equal to {mip.hg.minplayer}:
 					set {mip.hg.inizio} to now
-					broadcast "%{mip.hg.tag}%Inizio HungerGame tra %{mip.hg.waitsec}% secondi! Partecipate con /hg gioca"
+					broadcast "%{mip.hg.tag}%Inizio HungerGame tra 30 secondi! Partecipate con /hg gioca"
 			stop
 			
 		argument 1 is "-":
