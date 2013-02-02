@@ -343,6 +343,7 @@ on death of player:
 
 on logout:
 	if {mip.hg.player::%player%} is set:
+		{mip.hg.stato} is 1
 		set {mip.hg.offline::%player%} to player
 		execute console command "hg_tool - %player%"
 		wait 1 second
