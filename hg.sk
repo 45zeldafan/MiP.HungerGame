@@ -14,7 +14,7 @@ options:
 	tag: &2[MiP.HG] &e				# well.. the chat tag! Thanks if you leave it like this MiP.HG :)
 	mingrace: 5 minutes   			# Minutes of grace NO-PVP on start
 	waitsec: 30 seconds				# Waiting seconds before the game really starts (players teleport into arena)
-	minplayer: 5					# autostart at minplayer
+	minplayer: 10					# autostart at minplayer
 	slot: 32						# max slots allowed for the hg
 	map: w_hg						# hg map name
 	custommap: w_hg_backup			# hg custom map name
@@ -92,9 +92,9 @@ command /hg [<text>] [<player>]:
 			stop
 					
 		# Check if spawn point is set. If not it's stop everything
-		if {mip.hg.spawn} is not set:
-			message "{@tag}Plugin non settato correttamente. Avvisa l'admin! (spawn)"
-			stop
+#		if {mip.hg.spawn} is not set:
+#			message "{@tag}Plugin non settato correttamente. Avvisa l'admin! (spawn)"
+#			stop
 
 		# Check if lobby point is set. If not it's stop everything
 		if {mip.hg.lobby} is not set:
@@ -120,7 +120,7 @@ command /hg [<text>] [<player>]:
 				message "{@tag}<red>HG non in corso!"
 
 						
-		argument 1 is "esci":
+		argument 1 is "esci" or "exit":
 			execute console command "hg_tool - %player%"
 			stop
 			
@@ -152,16 +152,16 @@ command /hg [<text>] [<player>]:
 			stop
 
 
-command /hgcustom <text>:
-	description: Abilita/Disabilita la mappa custom
-	permission: mip.hg.admin
-	trigger:
-		if arg 1 is "yes","1" or "ok":
-			set {mip.hg.usecustom} to 1
-			message "{@tag}Selezionata mappa personalizzata" # custom map selected
-		else:
-			set {mip.hg.usecustom} to 0
-			message "{@tag}Selezionata mappa casuale" 		 # random map selected
+#command /hgcustom <text>:
+#	description: Abilita/Disabilita la mappa custom
+#	permission: mip.hg.admin
+#	trigger:
+#		if arg 1 is "yes","1" or "ok":
+#			set {mip.hg.usecustom} to 1
+#			message "{@tag}Selezionata mappa personalizzata" # custom map selected
+#		else:
+#			set {mip.hg.usecustom} to 0
+#			message "{@tag}Selezionata mappa casuale" 		 # random map selected
 			
 command /hg_win <player>:
 	description: Comando vittoria player
