@@ -177,6 +177,7 @@ command /hg_win <player>:
 		broadcast "<gold>(( )) %arg 1%<gold> ha vinto gli HungerGame di MinatoriUnti! (( ))"
 		broadcast "&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-&8-&7-"
 #		execute console command "hg_tool end"
+		execute console command "eco give %arg 1% 500"
 		stop
 	
 	
@@ -265,6 +266,7 @@ command /hg_tool [<text>] [<offline player>]:
 			set {mip.hg.inizio} to now
 			broadcast "{@tag} HungerGame iniziato!"
 			loop {mip.hg.player::*}:
+				loop-value is online
 				set gamemode of loop-value to survival
 #				teleport loop-value to {mip.hg.spawn}
 				execute console command "mv tp %loop-value% {@map}"
@@ -272,6 +274,7 @@ command /hg_tool [<text>] [<offline player>]:
 				add 10 to loop-value's hunger bar
 				clear loop-value's inventory
 				add 268 to inventory of loop-value
+				wait 1 tick
 			set {mip.hg.grace} to now
 			wait 5 seconds
 			broadcast "{@tag} HungerGame iniziato!"
@@ -384,3 +387,10 @@ on damage of player:
 	{_diff} is less than {@mingrace}
 	cancel event
 	send "{@tag}PVP negato.Periodo di grazia attivo per altri %difference between {@mingrace} and {_diff}% minuti" to attacker
+	
+on rightclick on sign:
+	first line is "[HG]"
+	if second line is "Gioca" or "Play":
+		make player execute command "hg gioca"
+	if second line is "Lista" or "List":
+		make player execute command "hg lista"
